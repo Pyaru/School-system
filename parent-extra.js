@@ -2,6 +2,12 @@
  * parent.html-এ </body>-এর ঠিক আগে এই এক লাইন বসান:  <script src="parent-extra.js"></script>
  * (parent.html-এর নিজের লগইন কোড বদলাতে হয় না; লগইনের পর এটি নিজে থেকে নিচে বসে) */
 (function () {
+  // ↓↓↓ রসিদের মাথার তথ্য — fees.html-এর ADM-এর সঙ্গে একই রাখুন ↓↓↓
+  var RCPT = {
+    logoText: 'ফ', logoUrl: 'logo.png',            // লোগোর ফাইল থাকলে যেমন 'logo.png' (fees.html-এ যা দিয়েছেন সেটাই)
+    address: 'ঠিকানা: মোহাম্মদপুর, ইঁছাখালী, রাজুনিয়া, চট্টগ্রাম',
+    phone: 'মোবাইল: ০১৮৬৫৭৬৩০৫০৮'
+  };
   var BN = '০১২৩৪৫৬৭৮৯';
   function bn(n) { return String(n).replace(/\d/g, function (d) { return BN[d]; }); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -24,12 +30,17 @@
     '#px .ms{margin-top:10px;padding:10px;border-radius:10px;font-size:14px}#px .ms.ok{background:#d1fae5;color:#065f46}#px .ms.er{background:#fee2e2;color:#991b1b}#px .dt{font-size:12px;color:#6b7280;margin:10px 0 2px}' +
     '#px .acc{display:flex;justify-content:space-between;align-items:center;background:#f0fdf4;border-radius:10px;padding:8px 10px;margin-top:6px}#px .acc button{padding:6px 12px;border:0;border-radius:8px;background:#0b6b4f;color:#fff;font-family:inherit}' +
     '#px .rc{margin-top:6px;padding:6px 12px;border:1px solid #0b6b4f;border-radius:8px;background:#fff;color:#0b6b4f;font-family:inherit;font-size:13px;cursor:pointer}' +
-    '#pxRcpt{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);overflow:auto;padding:14px;font-family:inherit}#pxRcpt .sheet{background:#fff;max-width:420px;margin:0 auto;border-radius:10px;padding:18px;position:relative;font-size:13px;line-height:1.6;color:#111}' +
-    '#pxRcpt h3{margin:0;text-align:center;font-size:17px}#pxRcpt .t{text-align:center;font-size:12px;color:#555;margin:2px 0 8px}#pxRcpt table{width:100%;border-collapse:collapse;margin:6px 0}#pxRcpt td,#pxRcpt th{padding:4px 3px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:12.5px}#pxRcpt .r{text-align:right;white-space:nowrap}' +
-    '#pxRcpt .kv{display:flex;justify-content:space-between;padding:2px 0}#pxRcpt .big{font-size:16px;font-weight:700;border-top:2px solid #111;margin-top:4px;padding-top:4px}#pxRcpt .ft{margin-top:10px;font-size:11px;color:#555;text-align:center}' +
-    '#pxRcpt .vd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:700;color:rgba(185,28,28,.35);transform:rotate(-20deg);pointer-events:none}' +
+    '#pxRcpt{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.6);overflow:auto;padding:12px;font-family:"Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif}#pxRcpt .box{background:#fff;margin:0 auto;border-radius:6px;overflow:hidden}#pxRcpt .scl{width:190mm;transform-origin:top left;color:#111827;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+    '#pxRcpt .rc{height:133mm;border:.5mm solid #0b6b4f;border-radius:2mm;padding:4mm 6mm;position:relative;overflow:hidden;display:flex;flex-direction:column;background:#fff}' +
+    '#pxRcpt .h{display:flex;align-items:center;gap:4mm;height:20mm}#pxRcpt .lg{width:17mm;height:17mm;border-radius:50%;border:.7mm solid #f59e0b;color:#0b6b4f;display:flex;align-items:center;justify-content:center;font-size:19pt;font-weight:700;position:relative;overflow:hidden;flex:none}#pxRcpt .lg img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff}' +
+    '#pxRcpt .sn{flex:1;text-align:center}#pxRcpt .sn b{display:block;font-size:18pt;line-height:1.5;color:#0b6b4f;white-space:nowrap}#pxRcpt .sn span{display:block;font-size:9pt;color:#374151;line-height:1.4}#pxRcpt .cp{border:.3mm solid #0b6b4f;color:#0b6b4f;border-radius:1.5mm;padding:0 2.5mm;font-size:9pt;font-weight:600;white-space:nowrap;line-height:6mm}' +
+    '#pxRcpt .tt{display:flex;align-items:center;gap:3mm;margin:1mm 0 2.5mm}#pxRcpt .tt .t{flex:1;text-align:center;background:linear-gradient(100deg,#064e3b,#0b6b4f);color:#fff;border:.5mm solid #f59e0b;border-radius:1.5mm;font-size:13pt;font-weight:700;line-height:1.7}#pxRcpt .tt .b{font-size:9.6pt;font-weight:600;white-space:nowrap}#pxRcpt .tt .b i{font-style:normal;border:.3mm solid #0b6b4f;border-radius:1mm;padding:0 2mm;margin-left:1mm;font-weight:700}' +
+    '#pxRcpt .r{display:flex;gap:4mm;margin-bottom:1.8mm}#pxRcpt .f{display:flex;align-items:flex-end;gap:1.5mm;min-width:0}#pxRcpt .k{font-size:9.6pt;white-space:nowrap}#pxRcpt .v{flex:1;min-width:0;border-bottom:.25mm solid #6b7280;font-weight:700;font-size:10pt;line-height:5.8mm;min-height:5.8mm;padding:0 1mm;white-space:nowrap;overflow:hidden}' +
+    '#pxRcpt table{width:100%;border-collapse:collapse;font-size:9.6pt;margin-top:1mm}#pxRcpt th{background:#0b6b4f;color:#fff;font-weight:600;padding:.8mm 1.5mm;border:.25mm solid #0b6b4f}#pxRcpt td{padding:.9mm 1.5mm;border:.25mm solid #9ca3af;line-height:1.35}#pxRcpt td.c{text-align:center}#pxRcpt td.n{text-align:right;white-space:nowrap}' +
+    '#pxRcpt .bt{display:flex;gap:5mm;margin-top:2.5mm;flex:1;min-height:0}#pxRcpt .bt .l{flex:1;font-size:9.4pt;line-height:1.5}#pxRcpt .bt .l b{color:#0b6b4f}#pxRcpt .sm{width:62mm;font-size:10pt}#pxRcpt .sm div{display:flex;justify-content:space-between;border-bottom:.25mm dashed #9ca3af;padding:.6mm 0}#pxRcpt .sm .p{font-weight:700;font-size:12pt;color:#0b6b4f;border-bottom:.4mm solid #0b6b4f}' +
+    '#pxRcpt .sg{display:flex;justify-content:space-between;gap:14mm;margin-top:auto;padding-top:6mm}#pxRcpt .sg div{flex:1;text-align:center;font-size:8.8pt;color:#b91c1c;border-top:.25mm solid #6b7280;padding-top:.6mm;font-weight:600}#pxRcpt .void{position:absolute;left:0;right:0;top:42%;text-align:center;font-size:46pt;font-weight:700;color:rgba(185,28,28,.28);transform:rotate(-12deg);pointer-events:none}' +
     '#pxRcpt .act{max-width:420px;margin:10px auto 0;display:flex;gap:8px}#pxRcpt .act button{flex:1;padding:12px;border:0;border-radius:10px;font-size:15px;font-family:inherit;cursor:pointer;background:#0b6b4f;color:#fff}#pxRcpt .act button.l{background:#e5e7eb;color:#111}' +
-    '@media print{@page{size:A5 portrait;margin:8mm}body>*:not(#pxRcpt){display:none!important}#pxRcpt{position:static!important;background:#fff!important;padding:0!important;overflow:visible!important}#pxRcpt .sheet{max-width:none!important;border-radius:0!important;padding:0!important}#pxRcpt .act{display:none!important}}';
+    '@media print{@page{size:A4;margin:10mm}body>*:not(#pxRcpt){display:none!important}#pxRcpt{position:static!important;background:#fff!important;padding:0!important;overflow:visible!important}#pxRcpt .box{width:auto!important;height:auto!important;border-radius:0!important}#pxRcpt .scl{transform:none!important}#pxRcpt .act{display:none!important}}';
   document.head.appendChild(st);
 
   var box = null, tab = '', sIdx = 0, PAY = null;
@@ -135,30 +146,69 @@
     };
   }
 
-  // ---------------- রসিদ দেখা / প্রিন্ট / PDF
+  // ---------------- রসিদ দেখা / প্রিন্ট / PDF (অফিসের "অভিভাবক কপি"-র মতো)
+  var W = ['শূন্য','এক','দুই','তিন','চার','পাঁচ','ছয়','সাত','আট','নয়','দশ','এগারো','বারো','তেরো','চৌদ্দ','পনেরো','ষোল','সতেরো','আঠারো','উনিশ','বিশ','একুশ','বাইশ','তেইশ','চব্বিশ','পঁচিশ','ছাব্বিশ','সাতাশ','আটাশ','ঊনত্রিশ','ত্রিশ','একত্রিশ','বত্রিশ','তেত্রিশ','চৌত্রিশ','পঁয়ত্রিশ','ছত্রিশ','সাঁইত্রিশ','আটত্রিশ','ঊনচল্লিশ','চল্লিশ','একচল্লিশ','বিয়াল্লিশ','তেতাল্লিশ','চুয়াল্লিশ','পঁয়তাল্লিশ','ছেচল্লিশ','সাতচল্লিশ','আটচল্লিশ','ঊনপঞ্চাশ','পঞ্চাশ','একান্ন','বায়ান্ন','তিপ্পান্ন','চুয়ান্ন','পঞ্চান্ন','ছাপ্পান্ন','সাতান্ন','আটান্ন','ঊনষাট','ষাট','একষট্টি','বাষট্টি','তেষট্টি','চৌষট্টি','পঁয়ষট্টি','ছেষট্টি','সাতষট্টি','আটষট্টি','ঊনসত্তর','সত্তর','একাত্তর','বাহাত্তর','তিয়াত্তর','চুয়াত্তর','পঁচাত্তর','ছিয়াত্তর','সাতাত্তর','আটাত্তর','ঊনআশি','আশি','একাশি','বিরাশি','তিরাশি','চুরাশি','পঁচাশি','ছিয়াশি','সাতাশি','অষ্টাশি','ঊননব্বই','নব্বই','একানব্বই','বিরানব্বই','তিরানব্বই','চুরানব্বই','পঁচানব্বই','ছিয়ানব্বই','সাতানব্বই','আটানব্বই','নিরানব্বই'];
+  function words(n) {
+    n = Math.floor(n); if (n <= 0) return 'শূন্য';
+    var out = [], cr = Math.floor(n / 10000000); n %= 10000000;
+    var lk = Math.floor(n / 100000); n %= 100000;
+    var th = Math.floor(n / 1000); n %= 1000;
+    var hu = Math.floor(n / 100); n %= 100;
+    if (cr) out.push((cr < 100 ? W[cr] : words(cr)) + ' কোটি');
+    if (lk) out.push(W[lk] + ' লাখ'); if (th) out.push(W[th] + ' হাজার'); if (hu) out.push(W[hu] + ' শত'); if (n) out.push(W[n]);
+    return out.join(' ');
+  }
+  function taka(n) { return bn(Math.round(n).toLocaleString('en-US')); }
+  function monthsLabel(keys) {
+    if (!keys || !keys.length) return '';
+    var by = {};
+    keys.slice().sort().forEach(function (k) { var p = k.split('-'); (by[p[0]] = by[p[0]] || []).push(Number(p[1]) - 1); });
+    return Object.keys(by).sort().map(function (y) {
+      var a = by[y], parts = [], s = a[0], prev = a[0];
+      for (var i = 1; i <= a.length; i++) {
+        if (a[i] === prev + 1) { prev = a[i]; continue; }
+        parts.push(s === prev ? MON[s] : MON[s] + '–' + MON[prev]);
+        s = a[i]; prev = a[i];
+      }
+      return parts.join(', ') + ' ' + bn(y);
+    }).join('; ');
+  }
+  function fitAll(root) {
+    Array.prototype.forEach.call(root.querySelectorAll('[data-fit]'), function (el) {
+      var s = el.tagName === 'B' ? 18 : 10, g = 40; el.style.fontSize = s + 'pt';
+      while (g-- && s > 6 && el.scrollWidth > el.clientWidth + 1) { s -= 0.3; el.style.fontSize = s.toFixed(1) + 'pt'; }
+    });
+  }
+  function rcptHtml(r, school) {
+    var row = function (k, v, f) { return '<div class="f" style="flex:' + (f || 1) + '"><span class="k">' + k + '</span><span class="v" data-fit>' + esc(v || '') + '</span></div>'; };
+    var rows = (r.items || []).map(function (it, i) {
+      var det = it.months && it.months.length ? monthsLabel(it.months) + ' (' + bn(it.months.length) + ' মাস × ' + taka(it.unit) + ')' : (it.qty > 1 ? bn(it.qty) + ' × ' + taka(it.unit) : '');
+      return '<tr><td class="c" style="width:9mm">' + bn(i + 1) + '</td><td style="width:38mm">' + esc(it.name) + '</td><td>' + esc(det) + '</td><td class="n" style="width:26mm">' + taka(it.amount) + '</td></tr>';
+    }).join('');
+    return '<div class="rc"><div class="h"><div class="lg">' + esc(RCPT.logoText) + (RCPT.logoUrl ? '<img alt="" src="' + esc(RCPT.logoUrl) + '" onerror="this.remove()">' : '') + '</div>' +
+      '<div class="sn"><b data-fit>' + esc(school) + '</b><span>' + esc(RCPT.address) + '</span><span>' + esc(RCPT.phone) + '</span></div><div class="cp">অভিভাবক কপি</div></div>' +
+      '<div class="tt"><span class="b">রসিদ নং <i>' + esc(r.rcpt) + '</i></span><div class="t">ফি জমার রসিদ</div><span class="b">তারিখ <i>' + esc(bn(r.date)) + '</i></span></div>' +
+      '<div class="r">' + row('নাম:', r.name, 3) + row('আইডি:', r.sid, 1.2) + '</div>' +
+      '<div class="r">' + row('শ্রেণি:', r.cls, 1.4) + row('রোল:', bn(r.roll), 1) + row('সময়:', bn(r.time), 1) + '</div>' +
+      '<table><tr><th>নং</th><th>খাত</th><th>বিবরণ</th><th>টাকা</th></tr>' + rows + '</table>' +
+      '<div class="bt"><div class="l"><b>কথায়:</b> ' + esc(words(r.paid)) + ' টাকা মাত্র<br><b>পদ্ধতি:</b> ' + esc(r.method) + (r.note ? '<br><b>নোট:</b> ' + esc(r.note) : '') + '</div>' +
+      '<div class="sm"><div><span>মোট</span><span>' + taka(r.total) + '</span></div>' + (r.discount ? '<div><span>ছাড়</span><span>− ' + taka(r.discount) + '</span></div>' : '') + '<div class="p"><span>পরিশোধিত</span><span>' + taka(r.paid) + ' টাকা</span></div></div></div>' +
+      '<div class="sg"><div>জমাদানকারীর স্বাক্ষর</div><div>গ্রহণকারী: ' + esc(r.by) + '</div></div>' +
+      (r.status === 'Void' ? '<div class="void">বাতিল</div>' : '') + '</div>';
+  }
   function showRcpt(id, done) {
     call('parentrcpt', { id: id }).then(function (j) {
       done();
       if (!j.ok) { alert(j.msg || 'রসিদ পাওয়া যায়নি'); return; }
-      var r = j.receipt, d = String(r.date || '').split('/');
-      var dateTxt = d.length === 3 ? bn(d[0]) + ' ' + MON[+d[1] - 1] + ' ' + bn(d[2]) : esc(r.date);
-      var rows = (r.items || []).map(function (it) {
-        var what = esc(it.name) + (it.months && it.months.length ? '<br><small>' + it.months.map(function (m) { var p = m.split('-'); return MON[+p[1] - 1] + ' ' + bn(p[0]); }).join(', ') + '</small>' : '');
-        return '<tr><td>' + what + '</td><td class="r">' + bn(it.qty) + ' × ' + bn(it.unit) + '</td><td class="r">' + bn(it.amount) + '</td></tr>';
-      }).join('');
       var o = document.getElementById('pxRcpt'); if (o) o.remove();
       o = document.createElement('div'); o.id = 'pxRcpt';
-      o.innerHTML = '<div class="sheet">' + (r.status === 'Void' ? '<div class="vd">বাতিল</div>' : '') +
-        '<h3>' + esc(j.school) + '</h3><div class="t">বেতন / ফি রসিদ</div>' +
-        '<div class="kv"><span>রসিদ নং</span><b>' + esc(r.rcpt) + '</b></div><div class="kv"><span>তারিখ</span><b>' + dateTxt + (r.time ? ', ' + bn(r.time) : '') + '</b></div>' +
-        '<div class="kv"><span>শিক্ষার্থী</span><b>' + esc(r.name) + '</b></div><div class="kv"><span>শ্রেণি / রোল</span><b>' + esc(r.cls) + ' / ' + esc(bn(r.roll)) + '</b></div><div class="kv"><span>আইডি</span><b>' + esc(r.sid) + '</b></div>' +
-        '<table><tr><th>বিবরণ</th><th class="r">পরিমাণ</th><th class="r">টাকা</th></tr>' + rows + '</table>' +
-        '<div class="kv"><span>মোট</span><span>' + bn(r.total) + ' ৳</span></div>' + (r.discount ? '<div class="kv"><span>ছাড়</span><span>− ' + bn(r.discount) + ' ৳</span></div>' : '') +
-        '<div class="kv big"><span>পরিশোধিত</span><span>' + bn(r.paid) + ' ৳</span></div>' +
-        '<div class="kv" style="margin-top:6px"><span>পরিশোধের মাধ্যম</span><span>' + esc(j.online.method) + ' (অনলাইন)</span></div><div class="kv"><span>TrxID</span><span style="font-family:monospace">' + esc(j.online.trx) + '</span></div>' +
-        '<div class="ft">অফিস কর্তৃক যাচাইকৃত · কম্পিউটারে তৈরি রসিদ, সিল-স্বাক্ষর ছাড়াই বৈধ</div></div>' +
+      o.innerHTML = '<div class="box"><div class="scl">' + rcptHtml(j.receipt, j.school) + '</div></div>' +
         '<div class="act"><button onclick="window.print()">🖨 প্রিন্ট / PDF</button><button class="l" id="pxRcClose">বন্ধ করুন</button></div>';
       document.body.appendChild(o);
+      var scl = o.querySelector('.scl'), box = o.querySelector('.box');
+      fitAll(scl);
+      var w = scl.offsetWidth, h = scl.offsetHeight, s = Math.min(1, (window.innerWidth - 24) / w);
+      scl.style.transform = 'scale(' + s + ')'; box.style.width = (w * s) + 'px'; box.style.height = (h * s) + 'px';
       o.querySelector('#pxRcClose').onclick = function () { o.remove(); };
     }).catch(function () { done(); alert('সংযোগ হয়নি। আবার চেষ্টা করুন।'); });
   }
