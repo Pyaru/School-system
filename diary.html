@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b6b4f">
+  <title>ক্লাস ডায়েরি</title>
+  <script src="pwa.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif; background: #f4f6f8; color: #1f2937; }
+    header { background: #0b6b4f; color: #fff; padding: 10px 16px 0; }
+    header a { color: #fff; font-size: 12px; text-decoration: none; opacity: .9; }
+    header h1 { margin: 2px 0 0; font-size: 18px; }
+    header small { opacity: .85; font-size: 12px; }
+    .tabs { display: flex; gap: 6px; margin-top: 10px; }
+    .tabs button { flex: 1; padding: 11px 6px; font-size: 15px; border: 0; border-radius: 10px 10px 0 0; background: rgba(255,255,255,.18); color: #fff; cursor: pointer; font-family: inherit; }
+    .tabs button.on { background: #f4f6f8; color: #0b6b4f; font-weight: 700; }
+    .wrap { padding: 12px; max-width: 640px; margin: 0 auto; }
+    .card { background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 1px 2px rgba(0,0,0,.08); margin-bottom: 12px; font-size: 14px; }
+    label { display: block; font-size: 13px; color: #4b5563; margin: 10px 0 4px; }
+    input, select, textarea { width: 100%; padding: 11px 12px; font-size: 16px; font-family: inherit; border: 1px solid #d1d5db; border-radius: 10px; background: #fff; }
+    textarea { min-height: 96px; resize: vertical; }
+    .b { padding: 11px 16px; font-size: 15px; font-family: inherit; border: 0; border-radius: 10px; background: #0b6b4f; color: #fff; cursor: pointer; }
+    .b.light { background: #e5e7eb; color: #111827; } .b.red { background: #b91c1c; } .b.sec { background: #374151; } .b.sm { padding: 7px 12px; font-size: 13px; }
+    .b:disabled { opacity: .5; }
+    .full { width: 100%; margin-top: 10px; }
+    .row { display: flex; gap: 8px; align-items: center; } .row > * { flex: 1; min-width: 0; }
+    .msg { margin: 10px 0; padding: 11px 12px; border-radius: 10px; font-size: 14px; display: none; }
+    .msg.ok { background: #d1fae5; color: #065f46; display: block; } .msg.err { background: #fee2e2; color: #991b1b; display: block; } .msg.info { background: #dbeafe; color: #1e40af; display: block; }
+    .hint { font-size: 12px; color: #6b7280; }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip { padding: 8px 12px; border-radius: 99px; border: 1px solid #d1d5db; background: #fff; font-size: 14px; cursor: pointer; font-family: inherit; }
+    .chip.on { background: #0b6b4f; color: #fff; border-color: #0b6b4f; }
+    .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: #e5e7eb; color: #374151; }
+    .badge.g { background: #d1fae5; color: #065f46; } .badge.y { background: #fef3c7; color: #92400e; } .badge.r { background: #fee2e2; color: #991b1b; }
+    .hidden { display: none !important; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; } td, th { padding: 7px 4px; border-bottom: 1px solid #f1f5f9; text-align: left; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="scan.html">‹ স্ক্যানার</a>
+    <h1>ক্লাস ডায়েরি ও হোমওয়ার্ক</h1>
+    <small id="sub"></small>
+    <div class="tabs"><button id="tW" class="on" onclick="tab('W')">লিখুন</button><button id="tL" onclick="tab('L')">সাম্প্রতিক লেখা</button></div>
+  </header>
+  <div class="wrap">
+
+    <div id="pW">
+      <div class="card">
+        <label style="margin-top:0">শ্রেণি</label><select id="cls"></select>
+        <label>ধরন</label><div class="chips" id="types"></div>
+        <div id="subBox"><label>বিষয়</label><select id="sub2"></select></div>
+        <label>লিখুন</label><textarea id="text" maxlength="600" placeholder="যেমন: অ আ ই — পৃষ্ঠা ৫ দেখে ২ বার লিখে আনবে"></textarea>
+        <div class="hint" id="cnt">০ / ৬০০</div>
+        <div class="row"><div><label>তারিখ</label><input type="date" id="date"></div><div><label>আপনার নাম</label><input id="by" placeholder="শিক্ষকের নাম"></div></div>
+        <button class="b full" id="send" onclick="send()">পাঠান (অভিভাবকরা দেখবেন)</button>
+        <div id="m" class="msg"></div>
+      </div>
+    </div>
+    <div id="pL" class="hidden">
+      <div class="card"><select id="fcls" onchange="loadList()"><option value="">সব শ্রেণি</option></select></div>
+      <div id="list">লোড হচ্ছে...</div>
+      <div id="m2" class="msg"></div>
+    </div>
+
+  </div>
+  <script>
+    // ↓↓↓ আগের পেজগুলোর সেই একই /exec লিংক ↓↓↓
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyL7jo2DJdwI__PmCTIaCgeXYzVMOzb_w3D62EdQ0ezckxIphi4WQq2aOK0SgueF-b1Sg/exec';
+
+    const $ = function (id) { return document.getElementById(id); };
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    const BNUM = '০১২৩৪৫৬৭৮৯';
+    function bn(n) { return String(n).replace(/\d/g, function (d) { return BNUM[d]; }); }
+    let ADMIN = '';
+    try { ADMIN = sessionStorage.getItem('card_admin') || ''; } catch (e) {}
+    function askAdmin() {
+      const p = prompt('অ্যাডমিন পিন দিন');
+      if (p && p.trim()) { ADMIN = p.trim(); try { sessionStorage.setItem('card_admin', ADMIN); } catch (e) {} }
+      return !!ADMIN;
+    }
+    function adm(action, params, retried) {
+      if (!ADMIN && !askAdmin()) return Promise.resolve({ ok: false, msg: 'অ্যাডমিন পিন ছাড়া চলবে না' });
+      const q = new URLSearchParams(Object.assign({ action: action, admin: ADMIN }, params || {}));
+      return fetch(API_URL + '?' + q.toString()).then(function (r) { return r.json(); }).then(function (j) {
+        if (j && j.badAdmin) {
+          ADMIN = ''; try { sessionStorage.removeItem('card_admin'); } catch (e) {}
+          if (!retried && askAdmin()) return adm(action, params, true);
+        }
+        return j;
+      });
+    }
+    function say(id, cls, text) { const e = $(id); e.className = 'msg ' + cls; e.textContent = text; }
+    function why(err) { return 'সংযোগ ত্রুটি (' + (err && err.message ? err.message : err) + ')'; }
+    function myName() { try { return localStorage.getItem('office_by') || ''; } catch (e) { return ''; } }
+    function askName() {
+      let n = myName();
+      if (!n) { n = (prompt('আপনার নাম (রেকর্ডে থাকবে)') || '').trim(); if (n) try { localStorage.setItem('office_by', n); } catch (e) {} }
+      return n;
+    }
+
+    let PIN = '', CFG = null, TYPE = '';
+    try { PIN = localStorage.getItem('att_pin') || ''; $('by').value = localStorage.getItem('diary_by') || ''; } catch (e) {}
+    function askPin() { const p = prompt('স্ক্যানার পিন দিন'); if (p && p.trim()) { PIN = p.trim(); try { localStorage.setItem('att_pin', PIN); } catch (e) {} } return !!PIN; }
+    function api(action, params, retried) {
+      if (!PIN && !askPin()) return Promise.resolve({ ok: false, msg: 'পিন ছাড়া চলবে না' });
+      const q = new URLSearchParams(Object.assign({ action: action, pin: PIN }, params || {}));
+      return fetch(API_URL + '?' + q.toString()).then(function (r) { return r.json(); }).then(function (j) {
+        if (j && j.badPin) { PIN = ''; try { localStorage.removeItem('att_pin'); } catch (e) {} if (!retried && askPin()) return api(action, params, true); }
+        return j;
+      });
+    }
+    function tab(t) {
+      $('tW').classList.toggle('on', t === 'W'); $('tL').classList.toggle('on', t === 'L');
+      $('pW').classList.toggle('hidden', t !== 'W'); $('pL').classList.toggle('hidden', t !== 'L');
+      if (t === 'L') loadList();
+    }
+    function pickType(t) {
+      TYPE = t;
+      Array.prototype.forEach.call($('types').children, function (b) { b.classList.toggle('on', b.textContent === t); });
+      $('subBox').classList.toggle('hidden', t === 'নোটিশ');
+    }
+    api('diaryconfig').then(function (j) {
+      if (!j.ok) { say('m', 'err', j.msg || 'লোড হয়নি'); return; }
+      CFG = j; $('sub').textContent = j.school;
+      $('cls').innerHTML = j.classes.map(function (c) { return '<option>' + esc(c) + '</option>'; }).join('');
+      $('fcls').innerHTML += j.classes.map(function (c) { return '<option>' + esc(c) + '</option>'; }).join('');
+      $('sub2').innerHTML = j.subjects.map(function (c) { return '<option>' + esc(c) + '</option>'; }).join('');
+      $('types').innerHTML = j.types.map(function (t) { return '<button type="button" class="chip" onclick="pickType(this.textContent)">' + esc(t) + '</button>'; }).join('');
+      $('date').value = j.today; $('date').max = ''; pickType(j.types[0]);
+      try { const lc = localStorage.getItem('diary_cls'); if (lc && j.classes.indexOf(lc) >= 0) $('cls').value = lc; } catch (e) {}
+    }).catch(function (e) { say('m', 'err', why(e)); });
+    $('text').addEventListener('input', function () { $('cnt').textContent = bn($('text').value.length) + ' / ৬০০'; });
+    function send() {
+      const by = $('by').value.trim();
+      if (!TYPE) { say('m', 'err', 'ধরন বাছুন'); return; }
+      if ($('text').value.trim().length < 3) { say('m', 'err', 'কিছু লিখুন'); return; }
+      if (by.length < 2) { say('m', 'err', 'আপনার নাম লিখুন'); return; }
+      try { localStorage.setItem('diary_by', by); localStorage.setItem('diary_cls', $('cls').value); } catch (e) {}
+      $('send').disabled = true; say('m', 'info', 'পাঠানো হচ্ছে...');
+      api('diaryadd', { cls: $('cls').value, dtype: TYPE, subject: TYPE === 'নোটিশ' ? '' : $('sub2').value, text: $('text').value.trim(), by: by, date: $('date').value }).then(function (j) {
+        $('send').disabled = false;
+        if (j.ok) { say('m', 'ok', '✓ পাঠানো হয়েছে — অভিভাবকরা পোর্টালে দেখবেন'); $('text').value = ''; $('cnt').textContent = '০ / ৬০০'; }
+        else say('m', 'err', j.msg || 'হয়নি');
+      }).catch(function (e) { $('send').disabled = false; say('m', 'err', why(e)); });
+    }
+    function loadList() {
+      api('diarylist', { cls: $('fcls').value, days: 7 }).then(function (j) {
+        if (!j.ok) { $('list').textContent = j.msg || 'লোড হয়নি'; return; }
+        const keep = new Date(j.today + 'T00:00:00Z').getTime() - 2 * 86400000;
+        $('list').innerHTML = j.list.length ? j.list.map(function (e) {
+          const canDel = new Date(e.date + 'T00:00:00Z').getTime() >= keep;
+          return '<div class="card"><div class="row"><b>' + esc(e.cls) + (e.subject ? ' · ' + esc(e.subject) : '') + '</b><span style="text-align:right"><span class="badge">' + esc(e.type) + '</span></span></div>' +
+            '<div style="margin:6px 0;white-space:pre-wrap">' + esc(e.text) + '</div><div class="row"><span class="hint">' + esc(bn(e.date)) + ' · ' + esc(e.by) + '</span>' +
+            (canDel ? '<span style="text-align:right"><button class="b red sm" onclick="del_(\'' + esc(e.id) + '\')">মুছুন</button></span>' : '') + '</div></div>';
+        }).join('') : '<div class="card" style="text-align:center">গত ৭ দিনে কিছু লেখা হয়নি</div>';
+      }).catch(function (e) { $('list').textContent = why(e); });
+    }
+    function del_(id) {
+      if (!confirm('এই লেখা মুছবেন?')) return;
+      api('diarydel', { id: id }).then(function (j) { say('m2', j.ok ? 'ok' : 'err', j.ok ? '✓ মোছা হয়েছে' : (j.msg || 'হয়নি')); loadList(); });
+    }
+
+  </script>
+</body>
+</html>
