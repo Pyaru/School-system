@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <script src="pwa.js"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b6b4f">
+  <script src="pwa.js"></script>
   <title>ছাত্র · QR হাজিরা</title>
   <style>
     * { box-sizing: border-box; }
@@ -35,6 +35,8 @@
     .late { background: #fef3c7 !important; color: #92400e; }
     .duplicate { background: #dbeafe !important; color: #1e40af; }
     .error { background: #fee2e2 !important; color: #991b1b; }
+    .queued { background: #fef3c7 !important; color: #92400e; }
+    #qb { display: inline-block; margin-top: 6px; padding: 5px 12px; border-radius: 99px; background: #fef3c7; color: #92400e; font-size: 13px; font-weight: 600; cursor: pointer; }
     .b { padding: 12px 16px; font-size: 15px; font-family: inherit; border: 0; border-radius: 10px; background: #0b6b4f; color: #fff; cursor: pointer; }
     .b.light { background: #e5e7eb; color: #111827; }
     .full { width: 100%; margin-bottom: 10px; }
@@ -48,9 +50,10 @@
 </head>
 <body>
   <header>
-    <a href="index.html">‹ অফিস মেনু</a>
+    <a href="office.html">‹ অফিস মেনু</a>
     <h1>ছাত্র · QR হাজিরা</h1>
     <small id="today"></small>
+    <div><span id="qb" class="hidden" onclick="syncQueue(true)"></span></div>
     <div class="tabs">
       <button id="tabA" class="on" onclick="setTab('A')">হাজিরা</button>
       <button id="tabL" onclick="setTab('L')">অনুপস্থিত তালিকা</button>
@@ -186,9 +189,66 @@
     function send(id) {
       $('resultS').className = 'result'; $('resultS').textContent = 'যাচাই হচ্ছে...';
       api('scan', { id: id })
-        .then(function (res) { show(res); sBusy = false; loadSummary(); })
-        .catch(function () { show({ ok: false, type: 'error', msg: 'সংযোগ ত্রুটি। ইন্টারনেট ও API_URL দেখুন।' }); sBusy = false; });
+        .then(function (res) { show(res); sBusy = false; loadSummary(); syncQueue(); })
+        .catch(function (err) {
+          sBusy = false;
+          // নেট নেই (fetch ব্যর্থ) হলে ফোনে জমা রাখি, নেট এলে নিজে পাঠাবে
+          if (!navigator.onLine || err instanceof TypeError) queueScan(id);
+          else show({ ok: false, type: 'error', msg: 'সার্ভার থেকে সঠিক উত্তর আসেনি। API_URL দেখুন।' });
+        });
     }
+
+    // ---------- অফলাইন কিউ ----------
+    function loadQ() { try { return JSON.parse(localStorage.getItem('att_q') || '[]'); } catch (e) { return []; } }
+    function saveQ(q) { try { localStorage.setItem('att_q', JSON.stringify(q)); } catch (e) {} updateBadge(); }
+    function updateBadge() {
+      const n = loadQ().length;
+      $('qb').classList.toggle('hidden', !n);
+      $('qb').textContent = '📴 ' + n + 'টি জমা পাঠানো বাকি — চাপুন';
+    }
+    function stuInfo(id) {
+      try { const m = JSON.parse(localStorage.getItem('att_stu') || '{}'); return m[id] || m[String(id).toUpperCase()] || null; } catch (e) { return null; }
+    }
+    function queueScan(id) {
+      const q = loadQ(), now = Date.now();
+      const dup = q.some(function (x) { return x.id === id && now - x.ts < 12 * 3600000; });
+      const info = stuInfo(id);
+      if (dup) { show({ ok: false, type: 'duplicate', msg: 'আগেই স্ক্যান করা হয়েছে (অফলাইনে জমা আছে)', name: info ? info[0] : id, cls: info ? info[2] : '' }); return; }
+      q.push({ id: id, ts: now }); saveQ(q);
+      show({ ok: true, type: 'queued', msg: '📴 অফলাইনে জমা হয়েছে — নেট এলে নিজে পাঠাবে', name: info ? info[1] : id, cls: info ? info[2] : '', roll: info ? info[3] : '' });
+    }
+    let syncing = false;
+    function syncQueue(manual) {
+      const q = loadQ();
+      if (syncing || !q.length || !PIN) { if (manual && !q.length) updateBadge(); return; }
+      syncing = true;
+      const batch = q.slice(0, 20), items = batch.map(function (x) { return x.id + '@' + x.ts; }).join(',');
+      api('scansync', { items: items }).then(function (j) {
+        syncing = false;
+        if (!j || !j.ok) return;
+        const done = {}; let ok = 0, dup = 0, bad = 0;
+        (j.results || []).forEach(function (r) { if (r.final) { done[r.key] = 1; if (r.ok) ok++; else if (r.type === 'duplicate') dup++; else bad++; } });
+        saveQ(loadQ().filter(function (x) { return !done[x.id + '@' + x.ts]; }));
+        if (ok || dup || bad) {
+          $('resultS').className = 'result present';
+          $('resultS').innerHTML = '<div class="big">✓ অফলাইন জমা পাঠানো হয়েছে</div><div>নতুন ' + ok + 'টি' + (dup ? ', আগেই ছিল ' + dup + 'টি' : '') + (bad ? ', বাদ ' + bad + 'টি' : '') + '</div>';
+          loadSummary();
+        }
+        if (Object.keys(done).length && loadQ().length) syncQueue();
+      }).catch(function () { syncing = false; if (manual) { $('resultS').className = 'result error'; $('resultS').textContent = 'এখনো নেট নেই। পরে আবার চেষ্টা করবে।'; } });
+    }
+    function refreshStudents() {
+      if (!PIN) return;
+      let t = 0; try { t = Number(localStorage.getItem('att_stu_t') || 0); } catch (e) {}
+      if (Date.now() - t < 6 * 3600000 && localStorage.getItem('att_stu')) return;
+      api('studentlist').then(function (j) {
+        if (!j || !j.ok) return;
+        const m = {}; j.students.forEach(function (s) { m[s[0]] = s; });
+        try { localStorage.setItem('att_stu', JSON.stringify(m)); localStorage.setItem('att_stu_t', String(Date.now())); } catch (e) {}
+      }).catch(function () {});
+    }
+    window.addEventListener('online', function () { syncQueue(); });
+    setInterval(function () { syncQueue(); }, 30000);
     function show(r) {
       const box = $('resultS');
       box.className = 'result ' + (r.type || '');
@@ -215,8 +275,7 @@
     $('manualId').addEventListener('keydown', function (e) { if (e.key === 'Enter') manualSubmit(); });
     camLabel();
     if (!PIN) askPin();
-    loadSummary();
+    loadSummary(); updateBadge(); refreshStudents(); syncQueue();
   </script>
-  <script src="parent-extra.js"></script>
 </body>
 </html>
