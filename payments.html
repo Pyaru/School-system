@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b6b4f">
+  <title>অনলাইন ফি যাচাই</title>
+  <script src="pwa.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif; background: #f4f6f8; color: #1f2937; }
+    header { background: #0b6b4f; color: #fff; padding: 10px 16px 0; }
+    header a { color: #fff; font-size: 12px; text-decoration: none; opacity: .9; }
+    header h1 { margin: 2px 0 0; font-size: 18px; }
+    header small { opacity: .85; font-size: 12px; }
+    .tabs { display: flex; gap: 6px; margin-top: 10px; }
+    .tabs button { flex: 1; padding: 11px 6px; font-size: 15px; border: 0; border-radius: 10px 10px 0 0; background: rgba(255,255,255,.18); color: #fff; cursor: pointer; font-family: inherit; }
+    .tabs button.on { background: #f4f6f8; color: #0b6b4f; font-weight: 700; }
+    .wrap { padding: 12px; max-width: 640px; margin: 0 auto; }
+    .card { background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 1px 2px rgba(0,0,0,.08); margin-bottom: 12px; font-size: 14px; }
+    label { display: block; font-size: 13px; color: #4b5563; margin: 10px 0 4px; }
+    input, select, textarea { width: 100%; padding: 11px 12px; font-size: 16px; font-family: inherit; border: 1px solid #d1d5db; border-radius: 10px; background: #fff; }
+    textarea { min-height: 96px; resize: vertical; }
+    .b { padding: 11px 16px; font-size: 15px; font-family: inherit; border: 0; border-radius: 10px; background: #0b6b4f; color: #fff; cursor: pointer; }
+    .b.light { background: #e5e7eb; color: #111827; } .b.red { background: #b91c1c; } .b.sec { background: #374151; } .b.sm { padding: 7px 12px; font-size: 13px; }
+    .b:disabled { opacity: .5; }
+    .full { width: 100%; margin-top: 10px; }
+    .row { display: flex; gap: 8px; align-items: center; } .row > * { flex: 1; min-width: 0; }
+    .msg { margin: 10px 0; padding: 11px 12px; border-radius: 10px; font-size: 14px; display: none; }
+    .msg.ok { background: #d1fae5; color: #065f46; display: block; } .msg.err { background: #fee2e2; color: #991b1b; display: block; } .msg.info { background: #dbeafe; color: #1e40af; display: block; }
+    .hint { font-size: 12px; color: #6b7280; }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip { padding: 8px 12px; border-radius: 99px; border: 1px solid #d1d5db; background: #fff; font-size: 14px; cursor: pointer; font-family: inherit; }
+    .chip.on { background: #0b6b4f; color: #fff; border-color: #0b6b4f; }
+    .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: #e5e7eb; color: #374151; }
+    .badge.g { background: #d1fae5; color: #065f46; } .badge.y { background: #fef3c7; color: #92400e; } .badge.r { background: #fee2e2; color: #991b1b; }
+    .hidden { display: none !important; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; } td, th { padding: 7px 4px; border-bottom: 1px solid #f1f5f9; text-align: left; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="office.html">‹ অফিস মেনু</a>
+    <h1>অনলাইন ফি যাচাই</h1>
+    <small id="sub"></small>
+    <div class="tabs"><button id="tP" class="on" onclick="load('Pending')">অপেক্ষমাণ</button><button id="tAll" onclick="load('All')">সব</button></div>
+  </header>
+  <div class="wrap">
+
+    <div class="card hint">অভিভাবক বিকাশ/নগদে টাকা পাঠিয়ে TrxID জানালে এখানে আসে। আপনার বিকাশ/নগদ অ্যাপে TrxID ও টাকা মিলিয়ে তারপর "গ্রহণ" চাপুন — রসিদ নিজে তৈরি হবে।</div>
+    <div id="m" class="msg"></div>
+    <div id="list">লোড হচ্ছে...</div>
+
+  </div>
+  <script>
+    // ↓↓↓ আগের পেজগুলোর সেই একই /exec লিংক ↓↓↓
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyL7jo2DJdwI__PmCTIaCgeXYzVMOzb_w3D62EdQ0ezckxIphi4WQq2aOK0SgueF-b1Sg/exec';
+
+    const $ = function (id) { return document.getElementById(id); };
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    const BNUM = '০১২৩৪৫৬৭৮৯';
+    function bn(n) { return String(n).replace(/\d/g, function (d) { return BNUM[d]; }); }
+    let ADMIN = '';
+    try { ADMIN = sessionStorage.getItem('card_admin') || ''; } catch (e) {}
+    function askAdmin() {
+      const p = prompt('অ্যাডমিন পিন দিন');
+      if (p && p.trim()) { ADMIN = p.trim(); try { sessionStorage.setItem('card_admin', ADMIN); } catch (e) {} }
+      return !!ADMIN;
+    }
+    function adm(action, params, retried) {
+      if (!ADMIN && !askAdmin()) return Promise.resolve({ ok: false, msg: 'অ্যাডমিন পিন ছাড়া চলবে না' });
+      const q = new URLSearchParams(Object.assign({ action: action, admin: ADMIN }, params || {}));
+      return fetch(API_URL + '?' + q.toString()).then(function (r) { return r.json(); }).then(function (j) {
+        if (j && j.badAdmin) {
+          ADMIN = ''; try { sessionStorage.removeItem('card_admin'); } catch (e) {}
+          if (!retried && askAdmin()) return adm(action, params, true);
+        }
+        return j;
+      });
+    }
+    function say(id, cls, text) { const e = $(id); e.className = 'msg ' + cls; e.textContent = text; }
+    function why(err) { return 'সংযোগ ত্রুটি (' + (err && err.message ? err.message : err) + ')'; }
+    function myName() { try { return localStorage.getItem('office_by') || ''; } catch (e) { return ''; } }
+    function askName() {
+      let n = myName();
+      if (!n) { n = (prompt('আপনার নাম (রেকর্ডে থাকবে)') || '').trim(); if (n) try { localStorage.setItem('office_by', n); } catch (e) {} }
+      return n;
+    }
+
+    let CUR = 'Pending';
+    const ST = { Pending: ['অপেক্ষমাণ', 'y'], Approved: ['গৃহীত', 'g'], Rejected: ['বাতিল', 'r'] };
+    function load(s) {
+      CUR = s; $('tP').classList.toggle('on', s === 'Pending'); $('tAll').classList.toggle('on', s === 'All');
+      adm('paylist', { status: s }).then(function (j) {
+        if (!j.ok) { $('list').textContent = j.msg || 'লোড হয়নি'; return; }
+        $('sub').textContent = s === 'Pending' ? bn(j.count) + 'টি অপেক্ষমাণ' : 'সর্বশেষ ' + bn(j.count) + 'টি';
+        $('list').innerHTML = j.list.length ? j.list.map(function (o) {
+          const st = ST[o.status] || [o.status, ''];
+          return '<div class="card"><div class="row"><b>' + esc(o.name) + '</b><span style="text-align:right"><span class="badge ' + st[1] + '">' + st[0] + '</span></span></div>' +
+            '<div class="hint">' + esc(o.cls) + ' · ' + esc(o.sid) + ' · ' + esc(o.id) + ' · ' + esc(o.date) + ' ' + esc(o.time) + '</div>' +
+            '<div style="margin:8px 0;line-height:1.8">' + esc(o.monthsText) + '<br><b style="font-size:20px">' + bn(o.amount) + ' টাকা</b> <span class="hint">(' + esc(o.method) + ')</span><br>' +
+            'TrxID: <b style="font-family:monospace;font-size:16px">' + esc(o.trx) + '</b><br><span class="hint">প্রেরকের নম্বর: ' + esc(o.sender) + '</span></div>' +
+            o.warn.map(function (w) { return '<div class="msg err" style="display:block;margin:4px 0">⚠ ' + esc(w) + '</div>'; }).join('') +
+            (o.status === 'Pending' ? '<div class="row"><button class="b" onclick="ok_(\'' + esc(o.id) + '\')">✅ গ্রহণ ও রসিদ</button><button class="b red" onclick="no_(\'' + esc(o.id) + '\')">❌ বাতিল</button></div>' : '') +
+            (o.status === 'Approved' ? '<div class="hint">রসিদ নং: <b>' + esc(o.rcpt) + '</b> · ' + esc(o.by) + '</div>' : '') +
+            (o.status === 'Rejected' ? '<div class="hint">কারণ: ' + esc(o.note) + '</div>' : '') + '</div>';
+        }).join('') : '<div class="card" style="text-align:center">কিছু নেই 🎉</div>';
+      }).catch(function (e) { $('list').textContent = why(e); });
+    }
+    function ok_(id) {
+      const by = askName(); if (!by) return;
+      if (!confirm('আপনার বিকাশ/নগদে TrxID ও টাকা মিলিয়েছেন? গ্রহণ করলে রসিদ তৈরি হবে।')) return;
+      say('m', 'info', 'রসিদ তৈরি হচ্ছে...');
+      adm('payapprove', { id: id, by: by }).then(function (j) {
+        say('m', j.ok ? 'ok' : 'err', j.ok ? '✓ রসিদ ' + j.receipt.rcpt + ' তৈরি হয়েছে (' + bn(j.receipt.paid) + ' টাকা)' : (j.msg || 'হয়নি'));
+        load(CUR);
+      }).catch(function (e) { say('m', 'err', why(e)); });
+    }
+    function no_(id) {
+      const by = askName(); if (!by) return;
+      const r = (prompt('বাতিলের কারণ (অভিভাবক পোর্টালে দেখতে পাবেন)') || '').trim(); if (!r) return;
+      adm('payreject', { id: id, by: by, reason: r }).then(function (j) {
+        say('m', j.ok ? 'ok' : 'err', j.ok ? '✓ বাতিল করা হয়েছে' : (j.msg || 'হয়নি')); load(CUR);
+      });
+    }
+    load('Pending');
+
+  </script>
+</body>
+</html>
