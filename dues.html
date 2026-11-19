@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b6b4f">
+  <title>বকেয়া ও রিমাইন্ডার</title>
+  <script src="pwa.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif; background: #f4f6f8; color: #1f2937; }
+    header { background: #0b6b4f; color: #fff; padding: 10px 16px 0; }
+    header a { color: #fff; font-size: 12px; text-decoration: none; opacity: .9; }
+    header h1 { margin: 2px 0 0; font-size: 18px; }
+    header small { opacity: .85; font-size: 12px; }
+    .tabs { display: flex; gap: 6px; margin-top: 10px; }
+    .tabs button { flex: 1; padding: 11px 6px; font-size: 15px; border: 0; border-radius: 10px 10px 0 0; background: rgba(255,255,255,.18); color: #fff; cursor: pointer; font-family: inherit; }
+    .tabs button.on { background: #f4f6f8; color: #0b6b4f; font-weight: 700; }
+    .wrap { padding: 12px; max-width: 640px; margin: 0 auto; }
+    .card { background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 1px 2px rgba(0,0,0,.08); margin-bottom: 12px; font-size: 14px; }
+    label { display: block; font-size: 13px; color: #4b5563; margin: 10px 0 4px; }
+    input, select, textarea { width: 100%; padding: 11px 12px; font-size: 16px; font-family: inherit; border: 1px solid #d1d5db; border-radius: 10px; background: #fff; }
+    textarea { min-height: 96px; resize: vertical; }
+    .b { padding: 11px 16px; font-size: 15px; font-family: inherit; border: 0; border-radius: 10px; background: #0b6b4f; color: #fff; cursor: pointer; }
+    .b.light { background: #e5e7eb; color: #111827; } .b.red { background: #b91c1c; } .b.sec { background: #374151; } .b.sm { padding: 7px 12px; font-size: 13px; }
+    .b:disabled { opacity: .5; }
+    .full { width: 100%; margin-top: 10px; }
+    .row { display: flex; gap: 8px; align-items: center; } .row > * { flex: 1; min-width: 0; }
+    .msg { margin: 10px 0; padding: 11px 12px; border-radius: 10px; font-size: 14px; display: none; }
+    .msg.ok { background: #d1fae5; color: #065f46; display: block; } .msg.err { background: #fee2e2; color: #991b1b; display: block; } .msg.info { background: #dbeafe; color: #1e40af; display: block; }
+    .hint { font-size: 12px; color: #6b7280; }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip { padding: 8px 12px; border-radius: 99px; border: 1px solid #d1d5db; background: #fff; font-size: 14px; cursor: pointer; font-family: inherit; }
+    .chip.on { background: #0b6b4f; color: #fff; border-color: #0b6b4f; }
+    .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: #e5e7eb; color: #374151; }
+    .badge.g { background: #d1fae5; color: #065f46; } .badge.y { background: #fef3c7; color: #92400e; } .badge.r { background: #fee2e2; color: #991b1b; }
+    .hidden { display: none !important; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; } td, th { padding: 7px 4px; border-bottom: 1px solid #f1f5f9; text-align: left; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="office.html">‹ অফিস মেনু</a>
+    <h1>বকেয়া ও রিমাইন্ডার</h1>
+    <small id="sub"></small>
+    
+  </header>
+  <div class="wrap">
+
+    <div class="card">
+      <div class="row">
+        <div><label style="margin-top:0">মাস</label><input type="month" id="mon"></div>
+        <div><label style="margin-top:0">শ্রেণি (ঐচ্ছিক)</label><input id="cls" placeholder="যেমন: নার্সারি"></div>
+      </div>
+      <button class="b full" onclick="load()">বকেয়া তালিকা দেখুন</button>
+    </div>
+    <div id="m" class="msg"></div>
+    <div id="sumBox" class="card hidden"></div>
+    <div id="tplBox" class="card hidden">
+      <b>বার্তার ধরন</b> <span class="hint">(নিজের মতো বদলান: {name} {cls} {month} {amount} {school})</span>
+      <textarea id="tpl" oninput="saveTpl()"></textarea>
+    </div>
+    <div id="list"></div>
+
+  </div>
+  <script>
+    // ↓↓↓ আগের পেজগুলোর সেই একই /exec লিংক ↓↓↓
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyL7jo2DJdwI__PmCTIaCgeXYzVMOzb_w3D62EdQ0ezckxIphi4WQq2aOK0SgueF-b1Sg/exec';
+
+    const $ = function (id) { return document.getElementById(id); };
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    const BNUM = '০১২৩৪৫৬৭৮৯';
+    function bn(n) { return String(n).replace(/\d/g, function (d) { return BNUM[d]; }); }
+    let ADMIN = '';
+    try { ADMIN = sessionStorage.getItem('card_admin') || ''; } catch (e) {}
+    function askAdmin() {
+      const p = prompt('অ্যাডমিন পিন দিন');
+      if (p && p.trim()) { ADMIN = p.trim(); try { sessionStorage.setItem('card_admin', ADMIN); } catch (e) {} }
+      return !!ADMIN;
+    }
+    function adm(action, params, retried) {
+      if (!ADMIN && !askAdmin()) return Promise.resolve({ ok: false, msg: 'অ্যাডমিন পিন ছাড়া চলবে না' });
+      const q = new URLSearchParams(Object.assign({ action: action, admin: ADMIN }, params || {}));
+      return fetch(API_URL + '?' + q.toString()).then(function (r) { return r.json(); }).then(function (j) {
+        if (j && j.badAdmin) {
+          ADMIN = ''; try { sessionStorage.removeItem('card_admin'); } catch (e) {}
+          if (!retried && askAdmin()) return adm(action, params, true);
+        }
+        return j;
+      });
+    }
+    function say(id, cls, text) { const e = $(id); e.className = 'msg ' + cls; e.textContent = text; }
+    function why(err) { return 'সংযোগ ত্রুটি (' + (err && err.message ? err.message : err) + ')'; }
+    function myName() { try { return localStorage.getItem('office_by') || ''; } catch (e) { return ''; } }
+    function askName() {
+      let n = myName();
+      if (!n) { n = (prompt('আপনার নাম (রেকর্ডে থাকবে)') || '').trim(); if (n) try { localStorage.setItem('office_by', n); } catch (e) {} }
+      return n;
+    }
+
+    let DATA = null;
+    const d0 = new Date(); const day = d0.getDate();
+    const base = new Date(d0.getFullYear(), d0.getMonth() - (day <= 10 ? 1 : 0), 1);
+    $('mon').value = base.getFullYear() + '-' + ('0' + (base.getMonth() + 1)).slice(-2);
+    function sentKey() { return 'dues_sent_' + $('mon').value; }
+    function sent() { try { return JSON.parse(localStorage.getItem(sentKey()) || '{}'); } catch (e) { return {}; } }
+    function markSent(id) { const s = sent(); s[id] = 1; try { localStorage.setItem(sentKey(), JSON.stringify(s)); } catch (e) {} }
+    function saveTpl() { try { localStorage.setItem('dues_tpl', $('tpl').value); } catch (e) {} }
+    function msgFor(s) {
+      return $('tpl').value.replace(/\{school\}/g, DATA.school).replace(/\{name\}/g, s.name).replace(/\{cls\}/g, s.cls).replace(/\{month\}/g, bn(DATA.monthName))
+        .replace(/\{amount\}/g, s.amount ? ' (' + bn(s.amount) + ' টাকা)' : '');
+    }
+    function load() {
+      say('m', 'info', 'লোড হচ্ছে...');
+      adm('duesremind', { month: $('mon').value, cls: $('cls').value.trim() }).then(function (j) {
+        if (!j.ok) { say('m', 'err', j.msg || 'হয়নি'); return; }
+        $('m').className = 'msg'; DATA = j;
+        let t = ''; try { t = localStorage.getItem('dues_tpl') || ''; } catch (e) {}
+        $('tpl').value = t || j.template; $('tplBox').classList.remove('hidden');
+        render();
+      }).catch(function (e) { say('m', 'err', why(e)); });
+    }
+    function render() {
+      const sd = sent(); let n = 0;
+      DATA.list.forEach(function (s) { if (sd[s.id]) n++; });
+      $('sumBox').classList.remove('hidden');
+      $('sumBox').innerHTML = '<b>' + esc(bn(DATA.monthName)) + '</b> — বকেয়া <b>' + bn(DATA.count) + '</b> জন' + (DATA.total ? ', আনুমানিক <b>' + bn(DATA.total) + '</b> টাকা' : '') +
+        '<div class="hint">বার্তা পাঠানো: ' + bn(n) + ' / ' + bn(DATA.count) + (DATA.noPhone ? ' · নম্বর নেই: ' + bn(DATA.noPhone) + ' জন' : '') + '</div>' +
+        '<button class="b light sm" style="margin-top:8px" onclick="resetSent()">"পাঠানো" চিহ্ন মুছুন</button>';
+      $('list').innerHTML = DATA.list.map(function (s) {
+        const done = !!sd[s.id];
+        return '<div class="card" style="' + (done ? 'opacity:.55' : '') + '"><div class="row"><span><b>' + esc(s.name) + '</b><div class="hint">' + esc(s.cls) + (s.roll ? ' · রোল ' + esc(bn(s.roll)) : '') + ' · ' + esc(s.phone || 'নম্বর নেই') + (s.amount ? ' · ' + bn(s.amount) + ' টাকা' : '') + '</div></span>' +
+          '<span style="flex:0 0 auto">' + (s.wa ? '<a class="b sm" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="https://wa.me/' + s.wa + '?text=' + encodeURIComponent(msgFor(s)) + '" onclick="markSent(\'' + esc(s.id) + '\');setTimeout(render,300)">' + (done ? '✓ আবার' : '💬 পাঠান') + '</a>' : '<span class="badge r">নম্বর নেই</span>') + '</span></div></div>';
+      }).join('') || '<div class="card" style="text-align:center">কারও বকেয়া নেই 🎉</div>';
+    }
+    function resetSent() { try { localStorage.removeItem(sentKey()); } catch (e) {} render(); }
+    $('mon').addEventListener('change', function () { if (DATA) load(); });
+    load();
+
+  </script>
+</body>
+</html>
