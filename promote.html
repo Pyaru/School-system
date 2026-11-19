@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b6b4f">
+  <title>উত্তরণ ও ছাত্রের অবস্থা</title>
+  <script src="pwa.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif; background: #f4f6f8; color: #1f2937; }
+    header { background: #0b6b4f; color: #fff; padding: 10px 16px 0; }
+    header a { color: #fff; font-size: 12px; text-decoration: none; opacity: .9; }
+    header h1 { margin: 2px 0 0; font-size: 18px; }
+    header small { opacity: .85; font-size: 12px; }
+    .tabs { display: flex; gap: 6px; margin-top: 10px; }
+    .tabs button { flex: 1; padding: 11px 6px; font-size: 15px; border: 0; border-radius: 10px 10px 0 0; background: rgba(255,255,255,.18); color: #fff; cursor: pointer; font-family: inherit; }
+    .tabs button.on { background: #f4f6f8; color: #0b6b4f; font-weight: 700; }
+    .wrap { padding: 12px; max-width: 640px; margin: 0 auto; }
+    .card { background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 1px 2px rgba(0,0,0,.08); margin-bottom: 12px; font-size: 14px; }
+    label { display: block; font-size: 13px; color: #4b5563; margin: 10px 0 4px; }
+    input, select, textarea { width: 100%; padding: 11px 12px; font-size: 16px; font-family: inherit; border: 1px solid #d1d5db; border-radius: 10px; background: #fff; }
+    textarea { min-height: 96px; resize: vertical; }
+    .b { padding: 11px 16px; font-size: 15px; font-family: inherit; border: 0; border-radius: 10px; background: #0b6b4f; color: #fff; cursor: pointer; }
+    .b.light { background: #e5e7eb; color: #111827; } .b.red { background: #b91c1c; } .b.sec { background: #374151; } .b.sm { padding: 7px 12px; font-size: 13px; }
+    .b:disabled { opacity: .5; }
+    .full { width: 100%; margin-top: 10px; }
+    .row { display: flex; gap: 8px; align-items: center; } .row > * { flex: 1; min-width: 0; }
+    .msg { margin: 10px 0; padding: 11px 12px; border-radius: 10px; font-size: 14px; display: none; }
+    .msg.ok { background: #d1fae5; color: #065f46; display: block; } .msg.err { background: #fee2e2; color: #991b1b; display: block; } .msg.info { background: #dbeafe; color: #1e40af; display: block; }
+    .hint { font-size: 12px; color: #6b7280; }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip { padding: 8px 12px; border-radius: 99px; border: 1px solid #d1d5db; background: #fff; font-size: 14px; cursor: pointer; font-family: inherit; }
+    .chip.on { background: #0b6b4f; color: #fff; border-color: #0b6b4f; }
+    .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: #e5e7eb; color: #374151; }
+    .badge.g { background: #d1fae5; color: #065f46; } .badge.y { background: #fef3c7; color: #92400e; } .badge.r { background: #fee2e2; color: #991b1b; }
+    .hidden { display: none !important; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; } td, th { padding: 7px 4px; border-bottom: 1px solid #f1f5f9; text-align: left; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="office.html">‹ অফিস মেনু</a>
+    <h1>উত্তরণ ও ছাত্রের অবস্থা</h1>
+    <small id="sub"></small>
+    <div class="tabs"><button id="tA" class="on" onclick="tab('A')">উত্তরণ</button><button id="tS" onclick="tab('S')">ছাত্রের অবস্থা</button><button id="tH" onclick="tab('H')">ইতিহাস</button></div>
+  </header>
+  <div class="wrap">
+
+    <div id="pA">
+      <div class="card">
+        <b>বছর শেষে উত্তরণ</b>
+        <div class="hint">প্রতিটি শ্রেণির ছাত্রদের কোন শ্রেণিতে তুলবেন তা বাছুন। সবচেয়ে উঁচু শ্রেণির ছাত্ররা "পাস আউট" হয়ে হাজিরা-বকেয়া তালিকা থেকে বাদ যাবে। ভুল হলে "ইতিহাস" ট্যাব থেকে ফেরানো যায়।</div>
+      </div>
+      <div id="plan" class="card">লোড হচ্ছে...</div>
+      <div class="card">
+        <b>কাউকে আটকে রাখতে চান? (অকৃতকার্য / একই শ্রেণিতে থাকবে)</b>
+        <div class="row" style="margin-top:8px"><input id="hq" placeholder="নাম বা আইডি লিখে খুঁজুন"><button class="b sm" onclick="holdSearch()" style="flex:0 0 auto">খুঁজুন</button></div>
+        <div id="hres" style="margin-top:8px"></div>
+        <div id="hold" class="chips" style="margin-top:8px"></div>
+      </div>
+      <div class="card">
+        <label style="display:flex;gap:8px;align-items:center;margin:0"><input type="checkbox" id="renum" style="width:auto"> নতুন শ্রেণিতে রোল ১, ২, ৩... নামের ক্রমে নতুন করে দিন</label>
+        <label>আপনার নাম</label><input id="by" placeholder="যিনি করছেন">
+        <button class="b full" onclick="apply()" id="applyBtn">উত্তরণ প্রয়োগ করুন</button>
+        <div id="mA" class="msg"></div>
+      </div>
+    </div>
+
+    <div id="pS" class="hidden">
+      <div class="card">
+        <div class="row"><input id="sq" placeholder="নাম বা আইডি"><select id="sst" onchange="stuLoad()"><option value="">সব অবস্থা</option></select></div>
+        <button class="b full" onclick="stuLoad()">খুঁজুন</button>
+      </div>
+      <div id="sres"></div>
+      <div id="mS" class="msg"></div>
+    </div>
+
+    <div id="pH" class="hidden"><div id="hist" class="card">লোড হচ্ছে...</div><div id="mH" class="msg"></div></div>
+
+  </div>
+  <script>
+    // ↓↓↓ আগের পেজগুলোর সেই একই /exec লিংক ↓↓↓
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyL7jo2DJdwI__PmCTIaCgeXYzVMOzb_w3D62EdQ0ezckxIphi4WQq2aOK0SgueF-b1Sg/exec';
+
+    const $ = function (id) { return document.getElementById(id); };
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    const BNUM = '০১২৩৪৫৬৭৮৯';
+    function bn(n) { return String(n).replace(/\d/g, function (d) { return BNUM[d]; }); }
+    let ADMIN = '';
+    try { ADMIN = sessionStorage.getItem('card_admin') || ''; } catch (e) {}
+    function askAdmin() {
+      const p = prompt('অ্যাডমিন পিন দিন');
+      if (p && p.trim()) { ADMIN = p.trim(); try { sessionStorage.setItem('card_admin', ADMIN); } catch (e) {} }
+      return !!ADMIN;
+    }
+    function adm(action, params, retried) {
+      if (!ADMIN && !askAdmin()) return Promise.resolve({ ok: false, msg: 'অ্যাডমিন পিন ছাড়া চলবে না' });
+      const q = new URLSearchParams(Object.assign({ action: action, admin: ADMIN }, params || {}));
+      return fetch(API_URL + '?' + q.toString()).then(function (r) { return r.json(); }).then(function (j) {
+        if (j && j.badAdmin) {
+          ADMIN = ''; try { sessionStorage.removeItem('card_admin'); } catch (e) {}
+          if (!retried && askAdmin()) return adm(action, params, true);
+        }
+        return j;
+      });
+    }
+    function say(id, cls, text) { const e = $(id); e.className = 'msg ' + cls; e.textContent = text; }
+    function why(err) { return 'সংযোগ ত্রুটি (' + (err && err.message ? err.message : err) + ')'; }
+    function myName() { try { return localStorage.getItem('office_by') || ''; } catch (e) { return ''; } }
+    function askName() {
+      let n = myName();
+      if (!n) { n = (prompt('আপনার নাম (রেকর্ডে থাকবে)') || '').trim(); if (n) try { localStorage.setItem('office_by', n); } catch (e) {} }
+      return n;
+    }
+
+    let PLAN = null, HOLD = {}, STATUSES = {};
+    $('by').value = myName();
+    function tab(t) {
+      ['A', 'S', 'H'].forEach(function (k) { $('t' + k).classList.toggle('on', k === t); $('p' + k).classList.toggle('hidden', k !== t); });
+      if (t === 'S') stuLoad(); if (t === 'H') histLoad();
+    }
+    function loadPlan() {
+      adm('promoplan').then(function (j) {
+        if (!j.ok) { $('plan').textContent = j.msg || 'লোড হয়নি'; return; }
+        PLAN = j;
+        $('plan').innerHTML = '<b>কোন শ্রেণি → কোথায়</b><table>' + j.classes.map(function (c, i) {
+          const opts = ['<option value="">(এই শ্রেণিতেই থাকবে)</option>'].concat(j.options.filter(function (o) { return o !== c.cls; }).map(function (o) {
+            return '<option value="' + esc(o) + '"' + (c.suggest === o ? ' selected' : '') + '>' + esc(o) + '</option>';
+          })).concat(['<option value="__out"' + (c.suggest === '__out' ? ' selected' : '') + '>🎓 পাস আউট (স্কুল শেষ)</option>']);
+          return '<tr><td style="width:38%"><b>' + esc(c.cls) + '</b><div class="hint">' + bn(c.count) + ' জন</div></td><td><select id="m' + i + '">' + opts.join('') + '</select></td></tr>';
+        }).join('') + '</table>';
+      }).catch(function (e) { $('plan').textContent = why(e); });
+    }
+    function holdSearch() {
+      const q = $('hq').value.trim(); if (!q) return;
+      adm('stulist', { q: q, status: 'Active' }).then(function (j) {
+        if (!j.ok) return;
+        $('hres').innerHTML = j.list.slice(0, 8).map(function (s) {
+          return '<div class="row" style="margin:4px 0"><span>' + esc(s.name) + ' <span class="hint">' + esc(s.cls) + ' · ' + esc(s.id) + '</span></span><button class="b light sm" style="flex:0 0 auto" onclick="addHold(\'' + esc(s.id) + '\',\'' + esc(s.name).replace(/'/g, '') + '\')">আটকান</button></div>';
+        }).join('') || '<div class="hint">পাওয়া যায়নি</div>';
+      });
+    }
+    function addHold(id, name) { HOLD[id] = name; drawHold(); $('hres').innerHTML = ''; $('hq').value = ''; }
+    function drawHold() {
+      $('hold').innerHTML = Object.keys(HOLD).map(function (id) { return '<button class="chip on" onclick="delete HOLD[\'' + id + '\'];drawHold()">' + esc(HOLD[id]) + ' ✕</button>'; }).join('');
+    }
+    function apply() {
+      if (!PLAN) return;
+      const map = {}; let n = 0;
+      PLAN.classes.forEach(function (c, i) { const v = $('m' + i).value; if (v) { map[c.cls] = v; n += c.count; } });
+      const by = $('by').value.trim();
+      if (!n) { say('mA', 'err', 'কোনো শ্রেণির জন্য গন্তব্য বাছা হয়নি'); return; }
+      if (by.length < 2) { say('mA', 'err', 'আপনার নাম লিখুন'); return; }
+      try { localStorage.setItem('office_by', by); } catch (e) {}
+      const holdN = Object.keys(HOLD).length;
+      if (!confirm('প্রায় ' + bn(n - holdN) + ' জনকে উপরের হিসেবে সরানো হবে। নিশ্চিত?\n(ভুল হলে "ইতিহাস" ট্যাব থেকে ফেরানো যাবে)')) return;
+      $('applyBtn').disabled = true; say('mA', 'info', 'চলছে... একটু অপেক্ষা করুন');
+      adm('promoapply', { map: JSON.stringify(map), hold: Object.keys(HOLD).join(','), by: by, renum: $('renum').checked ? '1' : '0', confirm: 'yes' }).then(function (j) {
+        $('applyBtn').disabled = false;
+        if (!j.ok) { say('mA', 'err', j.msg || 'হয়নি'); return; }
+        say('mA', 'ok', '✓ ' + bn(j.moved) + ' জন উঠেছে, ' + bn(j.passed) + ' জন পাস আউট, ' + bn(j.held) + ' জন আটকানো।');
+        HOLD = {}; drawHold(); loadPlan();
+      }).catch(function (e) { $('applyBtn').disabled = false; say('mA', 'err', why(e)); });
+    }
+    function stuLoad() {
+      adm('stulist', { q: $('sq').value.trim(), status: $('sst').value }).then(function (j) {
+        if (!j.ok) return;
+        STATUSES = j.statuses;
+        if ($('sst').options.length === 1) Object.keys(j.statuses).forEach(function (k) { const o = document.createElement('option'); o.value = k; o.textContent = j.statuses[k]; $('sst').appendChild(o); });
+        $('sres').innerHTML = '<div class="card">' + (j.list.length ? '<table>' + j.list.map(function (s) {
+          return '<tr><td><b>' + esc(s.name) + '</b><div class="hint">' + esc(s.cls) + ' · রোল ' + esc(s.roll) + ' · ' + esc(s.id) + '</div></td><td style="width:44%"><select onchange="setSt(\'' + esc(s.id) + '\',this)">' +
+            Object.keys(j.statuses).map(function (k) { return '<option value="' + k + '"' + (k === s.status ? ' selected' : '') + '>' + esc(j.statuses[k]) + '</option>'; }).join('') + '</select></td></tr>';
+        }).join('') + '</table>' + (j.count > 80 ? '<div class="hint">আরও আছে — নাম লিখে খুঁজুন</div>' : '') : 'কেউ নেই') + '</div>';
+      }).catch(function (e) { say('mS', 'err', why(e)); });
+    }
+    function setSt(id, sel) {
+      const by = askName(); if (!by) { stuLoad(); return; }
+      if (!confirm(id + ' — অবস্থা "' + STATUSES[sel.value] + '" করবেন?')) { stuLoad(); return; }
+      adm('stustatus', { id: id, status: sel.value, by: by }).then(function (j) {
+        say('mS', j.ok ? 'ok' : 'err', j.ok ? '✓ ' + id + ' → ' + STATUSES[sel.value] : (j.msg || 'হয়নি'));
+        if (!j.ok) stuLoad();
+      });
+    }
+    function histLoad() {
+      adm('promolog').then(function (j) {
+        if (!j.ok) return;
+        $('hist').innerHTML = j.batches.length ? '<b>সাম্প্রতিক উত্তরণ</b><table>' + j.batches.map(function (b) {
+          const done = b.undone >= b.count;
+          return '<tr><td>' + esc(b.date) + '<div class="hint">' + bn(b.count) + ' জন' + (done ? ' · ফেরানো হয়েছে' : (b.undone ? ' · ' + bn(b.undone) + ' জন ফেরানো' : '')) + '</div></td><td style="width:30%">' +
+            (done ? '' : '<button class="b red sm" onclick="undo(\'' + esc(b.batch) + '\')">ফেরান</button>') + '</td></tr>';
+        }).join('') + '</table>' : 'এখনো কোনো উত্তরণ হয়নি';
+      });
+    }
+    function undo(b) {
+      if (!confirm('এই উত্তরণ ফেরানো হবে। যাদের শ্রেণি এর পরে আবার বদলানো হয়েছে তারা বাদ যাবে। নিশ্চিত?')) return;
+      adm('promoundo', { batch: b, confirm: 'yes' }).then(function (j) {
+        say('mH', j.ok ? 'ok' : 'err', j.ok ? '✓ ' + bn(j.back) + ' জন আগের জায়গায় ফিরেছে' + (j.skipped ? ' (' + bn(j.skipped) + ' জন বাদ)' : '') : (j.msg || 'হয়নি'));
+        histLoad(); loadPlan();
+      });
+    }
+    loadPlan();
+
+  </script>
+</body>
+</html>
