@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b6b4f">
+  <title>মাসিক রিপোর্ট</title>
+  <script src="pwa.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Hind Siliguri", "Noto Sans Bengali", system-ui, sans-serif; background: #f4f6f8; color: #1f2937; }
+    header { background: #0b6b4f; color: #fff; padding: 10px 16px 0; }
+    header a { color: #fff; font-size: 12px; text-decoration: none; opacity: .9; }
+    header h1 { margin: 2px 0 0; font-size: 18px; }
+    header small { opacity: .85; font-size: 12px; }
+    .tabs { display: flex; gap: 6px; margin-top: 10px; }
+    .tabs button { flex: 1; padding: 11px 6px; font-size: 15px; border: 0; border-radius: 10px 10px 0 0; background: rgba(255,255,255,.18); color: #fff; cursor: pointer; font-family: inherit; }
+    .tabs button.on { background: #f4f6f8; color: #0b6b4f; font-weight: 700; }
+    .wrap { padding: 12px; max-width: 640px; margin: 0 auto; }
+    .card { background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 1px 2px rgba(0,0,0,.08); margin-bottom: 12px; font-size: 14px; }
+    label { display: block; font-size: 13px; color: #4b5563; margin: 10px 0 4px; }
+    input, select, textarea { width: 100%; padding: 11px 12px; font-size: 16px; font-family: inherit; border: 1px solid #d1d5db; border-radius: 10px; background: #fff; }
+    textarea { min-height: 96px; resize: vertical; }
+    .b { padding: 11px 16px; font-size: 15px; font-family: inherit; border: 0; border-radius: 10px; background: #0b6b4f; color: #fff; cursor: pointer; }
+    .b.light { background: #e5e7eb; color: #111827; } .b.red { background: #b91c1c; } .b.sec { background: #374151; } .b.sm { padding: 7px 12px; font-size: 13px; }
+    .b:disabled { opacity: .5; }
+    .full { width: 100%; margin-top: 10px; }
+    .row { display: flex; gap: 8px; align-items: center; } .row > * { flex: 1; min-width: 0; }
+    .msg { margin: 10px 0; padding: 11px 12px; border-radius: 10px; font-size: 14px; display: none; }
+    .msg.ok { background: #d1fae5; color: #065f46; display: block; } .msg.err { background: #fee2e2; color: #991b1b; display: block; } .msg.info { background: #dbeafe; color: #1e40af; display: block; }
+    .hint { font-size: 12px; color: #6b7280; }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip { padding: 8px 12px; border-radius: 99px; border: 1px solid #d1d5db; background: #fff; font-size: 14px; cursor: pointer; font-family: inherit; }
+    .chip.on { background: #0b6b4f; color: #fff; border-color: #0b6b4f; }
+    .badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; background: #e5e7eb; color: #374151; }
+    .badge.g { background: #d1fae5; color: #065f46; } .badge.y { background: #fef3c7; color: #92400e; } .badge.r { background: #fee2e2; color: #991b1b; }
+    .hidden { display: none !important; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; } td, th { padding: 7px 4px; border-bottom: 1px solid #f1f5f9; text-align: left; }
+
+    .sheet { background: #fff; max-width: 794px; margin: 0 auto 12px; padding: 22px 26px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.12); font-size: 12.5px; line-height: 1.55; }
+    .sheet h2 { margin: 0; text-align: center; font-size: 19px; } .sheet .sub { text-align: center; margin: 2px 0 10px; font-size: 13px; }
+    .sheet h3 { margin: 10px 0 4px; font-size: 13.5px; background: #e6f4ee; padding: 3px 8px; border-left: 4px solid #0b6b4f; }
+    .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 18px; }
+    .sheet table { font-size: 12px; } .sheet td, .sheet th { padding: 3px 4px; border-bottom: 1px solid #e5e7eb; }
+    .sheet th { background: #f3f4f6; } .num { text-align: right; white-space: nowrap; }
+    .kv { display: flex; justify-content: space-between; border-bottom: 1px dotted #d1d5db; padding: 2px 0; }
+    .sig { display: flex; justify-content: space-between; margin-top: 46px; font-size: 12px; } .sig div { border-top: 1px solid #111; padding-top: 3px; min-width: 150px; text-align: center; }
+    @media print {
+      @page { size: A4; margin: 10mm; }
+      header, .noprint, #m { display: none !important; }
+      body { background: #fff; } .wrap { padding: 0; max-width: none; }
+      .sheet { box-shadow: none; margin: 0; padding: 0; max-width: none; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="office.html">‹ অফিস মেনু</a>
+    <h1>মাসিক কমিটি রিপোর্ট</h1>
+    <small id="sub"></small>
+    
+  </header>
+  <div class="wrap">
+
+    <div class="card noprint">
+      <div class="row"><div><label style="margin-top:0">মাস</label><input type="month" id="mon"></div><button class="b" style="flex:0 0 auto;align-self:end" onclick="load()">রিপোর্ট বানান</button></div>
+      <button class="b sec full hidden" id="pr" onclick="window.print()">🖨 প্রিন্ট / PDF সংরক্ষণ</button>
+      <div class="hint" style="margin-top:6px">প্রিন্ট ডায়ালগে "Save as PDF" বাছলে PDF হবে।</div>
+    </div>
+    <div id="m" class="msg"></div>
+    <div id="sheet" class="sheet hidden"></div>
+
+  </div>
+  <script>
+    // ↓↓↓ আগের পেজগুলোর সেই একই /exec লিংক ↓↓↓
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyL7jo2DJdwI__PmCTIaCgeXYzVMOzb_w3D62EdQ0ezckxIphi4WQq2aOK0SgueF-b1Sg/exec';
+
+    const $ = function (id) { return document.getElementById(id); };
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    const BNUM = '০১২৩৪৫৬৭৮৯';
+    function bn(n) { return String(n).replace(/\d/g, function (d) { return BNUM[d]; }); }
+    let ADMIN = '';
+    try { ADMIN = sessionStorage.getItem('card_admin') || ''; } catch (e) {}
+    function askAdmin() {
+      const p = prompt('অ্যাডমিন পিন দিন');
+      if (p && p.trim()) { ADMIN = p.trim(); try { sessionStorage.setItem('card_admin', ADMIN); } catch (e) {} }
+      return !!ADMIN;
+    }
+    function adm(action, params, retried) {
+      if (!ADMIN && !askAdmin()) return Promise.resolve({ ok: false, msg: 'অ্যাডমিন পিন ছাড়া চলবে না' });
+      const q = new URLSearchParams(Object.assign({ action: action, admin: ADMIN }, params || {}));
+      return fetch(API_URL + '?' + q.toString()).then(function (r) { return r.json(); }).then(function (j) {
+        if (j && j.badAdmin) {
+          ADMIN = ''; try { sessionStorage.removeItem('card_admin'); } catch (e) {}
+          if (!retried && askAdmin()) return adm(action, params, true);
+        }
+        return j;
+      });
+    }
+    function say(id, cls, text) { const e = $(id); e.className = 'msg ' + cls; e.textContent = text; }
+    function why(err) { return 'সংযোগ ত্রুটি (' + (err && err.message ? err.message : err) + ')'; }
+    function myName() { try { return localStorage.getItem('office_by') || ''; } catch (e) { return ''; } }
+    function askName() {
+      let n = myName();
+      if (!n) { n = (prompt('আপনার নাম (রেকর্ডে থাকবে)') || '').trim(); if (n) try { localStorage.setItem('office_by', n); } catch (e) {} }
+      return n;
+    }
+
+    const SCHOOL_FALLBACK = 'ফয়যানে মদীনা কিন্ডারগার্টেন স্কুল';
+    const d0 = new Date(); const base = new Date(d0.getFullYear(), d0.getMonth() - (d0.getDate() <= 10 ? 1 : 0), 1);
+    $('mon').value = base.getFullYear() + '-' + ('0' + (base.getMonth() + 1)).slice(-2);
+    function tk(n) { return bn(Math.round(n || 0).toLocaleString('en-US')) + ' ৳'; }
+    function kv(a, b) { return '<div class="kv"><span>' + esc(a) + '</span><b>' + b + '</b></div>'; }
+    function load() {
+      say('m', 'info', 'রিপোর্ট তৈরি হচ্ছে...'); $('sheet').classList.add('hidden'); $('pr').classList.add('hidden');
+      adm('monthreport', { month: $('mon').value }).then(function (j) {
+        if (!j.ok) { say('m', 'err', j.msg || 'হয়নি'); return; }
+        $('m').className = 'msg'; draw(j); $('sheet').classList.remove('hidden'); $('pr').classList.remove('hidden');
+      }).catch(function (e) { say('m', 'err', why(e)); });
+    }
+    function draw(j) {
+      const a = j.attendance, f = j.fees, ac = j.accounts, t = j.teachers;
+      const headRows = Object.keys(f.byHead || {}).map(function (k) { return kv(k, tk(f.byHead[k])); }).join('') || '<div class="hint">কোনো আদায় নেই</div>';
+      const metRows = Object.keys(f.byMethod || {}).map(function (k) { return kv(k, tk(f.byMethod[k])); }).join('');
+      const clsRows = Object.keys(j.students.byClass).map(function (c) { return '<tr><td>' + esc(c) + '</td><td class="num">' + bn(j.students.byClass[c]) + ' জন</td></tr>'; }).join('');
+      const attRows = a.classes.map(function (c) { return '<tr><td>' + esc(c.cls) + '</td><td class="num">' + (c.pct == null ? '-' : bn(c.pct) + '%') + '</td></tr>'; }).join('');
+      const lowRows = a.low.map(function (s) { return '<tr><td>' + esc(s.name) + '</td><td>' + esc(s.cls) + '</td><td class="num">' + bn(s.days) + ' দিন</td></tr>'; }).join('');
+      const tRows = t.list.map(function (s) { return '<tr><td>' + esc(s.name) + '</td><td>' + esc(s.desig) + '</td><td class="num">' + bn(s.present) + '</td><td class="num">' + bn(s.late) + '</td></tr>'; }).join('');
+      let acHtml = '<div class="hint">এই মাসের হিসাব পাওয়া যায়নি</div>';
+      if (ac) {
+        const ex = Object.keys(ac.expense || {}).map(function (k) { return kv(k, tk(ac.expense[k])); }).join('');
+        acHtml = '<div class="g2"><div><b>আয়</b>' + Object.keys(ac.income || {}).map(function (k) { return kv(k, tk(ac.income[k])); }).join('') + kv('মোট আয়', tk(ac.totalIncome)) + '</div>' +
+          '<div><b>ব্যয়</b>' + (ex || '<div class="hint">কোনো ব্যয় নেই</div>') + kv('মোট ব্যয়', tk(ac.totalExpense)) + '</div></div>' +
+          '<div class="kv" style="font-size:14px"><span><b>নিট ' + (ac.net >= 0 ? 'উদ্বৃত্ত' : 'ঘাটতি') + '</b></span><b>' + tk(Math.abs(ac.net)) + '</b></div>';
+      }
+      $('sheet').innerHTML =
+        '<h2>' + esc(j.school || SCHOOL_FALLBACK) + '</h2><div class="sub"><b>মাসিক প্রতিবেদন — ' + esc(bn(j.monthName)) + '</b><br><span class="hint">পরিচালনা কমিটির জন্য</span></div>' +
+        '<h3>১. ছাত্র-ছাত্রী</h3><div class="g2"><div>' + kv('বর্তমান মোট ছাত্র-ছাত্রী', bn(j.students.total) + ' জন') + kv('এই মাসে ছাড়পত্র/বাদ', bn(j.students.outCount) + ' জন') + '</div><table>' + clsRows + '</table></div>' +
+        '<h3>২. ছাত্র উপস্থিতি</h3><div class="g2"><div>' + kv('স্কুল চলেছে', bn(a.days) + ' দিন') + kv('গড় উপস্থিতি', a.avgPct == null ? '-' : bn(a.avgPct) + '%') + kv('দেরিতে আসা (মোট বার)', bn(a.lateCount)) +
+        kv('উপস্থিতি ৬০%-এর কম', bn(a.lowCount) + ' জন') + '</div><table><tr><th>শ্রেণি</th><th class="num">উপস্থিতি</th></tr>' + attRows + '</table></div>' +
+        (lowRows ? '<div class="hint" style="margin-top:4px">কম উপস্থিতি (সর্বনিম্ন ৮ জন):</div><table><tr><th>নাম</th><th>শ্রেণি</th><th class="num">উপস্থিত</th></tr>' + lowRows + '</table>' : '') +
+        '<h3>৩. শিক্ষক উপস্থিতি (' + bn(t.days) + ' কর্মদিবসে)</h3>' + (tRows ? '<table><tr><th>নাম</th><th>পদবি</th><th class="num">উপস্থিত</th><th class="num">দেরি</th></tr>' + tRows + '</table>' : '<div class="hint">তথ্য নেই</div>') +
+        '<h3>৪. ফি আদায়</h3><div class="g2"><div>' + headRows + kv('ছাড়', tk(f.discount)) + kv('মোট আদায় (' + bn(f.count) + 'টি রসিদ)', tk(f.paid)) + '</div><div>' + (metRows ? '<b>পদ্ধতি অনুযায়ী</b>' + metRows : '') +
+        (f.duesCount != null ? '<div class="kv" style="margin-top:6px"><span>এই মাসের বেতন বকেয়া</span><b>' + bn(f.duesCount) + ' জন' + (f.duesAmount ? ' · ' + tk(f.duesAmount) : '') + '</b></div>' : '') + '</div></div>' +
+        '<h3>৫. আয়-ব্যয় (ক্যাশবুক)</h3>' + acHtml +
+        '<div class="sig"><div>হিসাবরক্ষক</div><div>প্রধান শিক্ষক</div><div>সভাপতি</div></div>';
+    }
+    load();
+
+  </script>
+</body>
+</html>
