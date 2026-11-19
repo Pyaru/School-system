@@ -22,7 +22,14 @@
     '#px .mm label.dis{background:#f3f4f6;color:#9ca3af;cursor:default}#px .mm input{display:none}#px .mm input:checked+span{font-weight:700;color:#0b6b4f}#px .mm label:has(input:checked){background:#d1fae5;border-color:#10b981}' +
     '#px .bd{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#e5e7eb}#px .bd.g{background:#d1fae5;color:#065f46}#px .bd.y{background:#fef3c7;color:#92400e}#px .bd.r{background:#fee2e2;color:#991b1b}' +
     '#px .ms{margin-top:10px;padding:10px;border-radius:10px;font-size:14px}#px .ms.ok{background:#d1fae5;color:#065f46}#px .ms.er{background:#fee2e2;color:#991b1b}#px .dt{font-size:12px;color:#6b7280;margin:10px 0 2px}' +
-    '#px .acc{display:flex;justify-content:space-between;align-items:center;background:#f0fdf4;border-radius:10px;padding:8px 10px;margin-top:6px}#px .acc button{padding:6px 12px;border:0;border-radius:8px;background:#0b6b4f;color:#fff;font-family:inherit}';
+    '#px .acc{display:flex;justify-content:space-between;align-items:center;background:#f0fdf4;border-radius:10px;padding:8px 10px;margin-top:6px}#px .acc button{padding:6px 12px;border:0;border-radius:8px;background:#0b6b4f;color:#fff;font-family:inherit}' +
+    '#px .rc{margin-top:6px;padding:6px 12px;border:1px solid #0b6b4f;border-radius:8px;background:#fff;color:#0b6b4f;font-family:inherit;font-size:13px;cursor:pointer}' +
+    '#pxRcpt{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);overflow:auto;padding:14px;font-family:inherit}#pxRcpt .sheet{background:#fff;max-width:420px;margin:0 auto;border-radius:10px;padding:18px;position:relative;font-size:13px;line-height:1.6;color:#111}' +
+    '#pxRcpt h3{margin:0;text-align:center;font-size:17px}#pxRcpt .t{text-align:center;font-size:12px;color:#555;margin:2px 0 8px}#pxRcpt table{width:100%;border-collapse:collapse;margin:6px 0}#pxRcpt td,#pxRcpt th{padding:4px 3px;border-bottom:1px solid #e5e7eb;text-align:left;font-size:12.5px}#pxRcpt .r{text-align:right;white-space:nowrap}' +
+    '#pxRcpt .kv{display:flex;justify-content:space-between;padding:2px 0}#pxRcpt .big{font-size:16px;font-weight:700;border-top:2px solid #111;margin-top:4px;padding-top:4px}#pxRcpt .ft{margin-top:10px;font-size:11px;color:#555;text-align:center}' +
+    '#pxRcpt .vd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:700;color:rgba(185,28,28,.35);transform:rotate(-20deg);pointer-events:none}' +
+    '#pxRcpt .act{max-width:420px;margin:10px auto 0;display:flex;gap:8px}#pxRcpt .act button{flex:1;padding:12px;border:0;border-radius:10px;font-size:15px;font-family:inherit;cursor:pointer;background:#0b6b4f;color:#fff}#pxRcpt .act button.l{background:#e5e7eb;color:#111}' +
+    '@media print{@page{size:A5 portrait;margin:8mm}body>*:not(#pxRcpt){display:none!important}#pxRcpt{position:static!important;background:#fff!important;padding:0!important;overflow:visible!important}#pxRcpt .sheet{max-width:none!important;border-radius:0!important;padding:0!important}#pxRcpt .act{display:none!important}}';
   document.head.appendChild(st);
 
   var box = null, tab = '', sIdx = 0, PAY = null;
@@ -97,9 +104,13 @@
       var b = r.status === 'Approved' ? '<span class="bd g">গৃহীত · রসিদ ' + esc(r.rcpt) + '</span>' : r.status === 'Rejected' ? '<span class="bd r">বাতিল</span>' : '<span class="bd y">অপেক্ষমাণ</span>';
       var ms = r.months.split(',').filter(Boolean).map(function (m) { var p = m.split('-'); return MON[+p[1] - 1]; }).join(', ');
       return '<div style="padding:7px 0;border-bottom:1px solid #f1f5f9">' + b + '<div>' + esc(ms) + ' — ' + bn(r.amount) + ' টাকা (' + esc(r.method) + ')</div>' +
-        (r.status === 'Rejected' && r.note ? '<div style="color:#991b1b;font-size:13px">কারণ: ' + esc(r.note) + '</div>' : '') + '<div style="font-size:11px;color:#9ca3af">TrxID ' + esc(r.trx) + ' · ' + esc(bn(r.date)) + '</div></div>';
+        (r.status === 'Rejected' && r.note ? '<div style="color:#991b1b;font-size:13px">কারণ: ' + esc(r.note) + '</div>' : '') +
+        (r.status === 'Approved' ? '<button class="rc" data-rid="' + esc(r.id) + '">🧾 রসিদ দেখুন / প্রিন্ট</button>' : '') + '<div style="font-size:11px;color:#9ca3af">TrxID ' + esc(r.trx) + ' · ' + esc(bn(r.date)) + '</div></div>';
     }).join('') + '</div>';
     body.innerHTML = html;
+    Array.prototype.forEach.call(body.querySelectorAll('.rc'), function (b) {
+      b.onclick = function () { b.disabled = true; b.textContent = 'লোড হচ্ছে...'; showRcpt(b.getAttribute('data-rid'), function () { b.disabled = false; b.textContent = '🧾 রসিদ দেখুন / প্রিন্ট'; }); };
+    });
     var sel = body.querySelector('#pxS'); if (sel) sel.onchange = function () { sIdx = +sel.value; drawPay(body); };
     Array.prototype.forEach.call(body.querySelectorAll('.acc button'), function (b) {
       b.onclick = function () { try { navigator.clipboard.writeText(b.getAttribute('data-n')); b.textContent = '✓ কপি হলো'; } catch (e) { b.textContent = b.getAttribute('data-n'); } };
@@ -122,6 +133,34 @@
         else m('er', j.msg || 'হয়নি');
       }).catch(function () { go.disabled = false; m('er', 'সংযোগ হয়নি। আবার চেষ্টা করুন।'); });
     };
+  }
+
+  // ---------------- রসিদ দেখা / প্রিন্ট / PDF
+  function showRcpt(id, done) {
+    call('parentrcpt', { id: id }).then(function (j) {
+      done();
+      if (!j.ok) { alert(j.msg || 'রসিদ পাওয়া যায়নি'); return; }
+      var r = j.receipt, d = String(r.date || '').split('/');
+      var dateTxt = d.length === 3 ? bn(d[0]) + ' ' + MON[+d[1] - 1] + ' ' + bn(d[2]) : esc(r.date);
+      var rows = (r.items || []).map(function (it) {
+        var what = esc(it.name) + (it.months && it.months.length ? '<br><small>' + it.months.map(function (m) { var p = m.split('-'); return MON[+p[1] - 1] + ' ' + bn(p[0]); }).join(', ') + '</small>' : '');
+        return '<tr><td>' + what + '</td><td class="r">' + bn(it.qty) + ' × ' + bn(it.unit) + '</td><td class="r">' + bn(it.amount) + '</td></tr>';
+      }).join('');
+      var o = document.getElementById('pxRcpt'); if (o) o.remove();
+      o = document.createElement('div'); o.id = 'pxRcpt';
+      o.innerHTML = '<div class="sheet">' + (r.status === 'Void' ? '<div class="vd">বাতিল</div>' : '') +
+        '<h3>' + esc(j.school) + '</h3><div class="t">বেতন / ফি রসিদ</div>' +
+        '<div class="kv"><span>রসিদ নং</span><b>' + esc(r.rcpt) + '</b></div><div class="kv"><span>তারিখ</span><b>' + dateTxt + (r.time ? ', ' + bn(r.time) : '') + '</b></div>' +
+        '<div class="kv"><span>শিক্ষার্থী</span><b>' + esc(r.name) + '</b></div><div class="kv"><span>শ্রেণি / রোল</span><b>' + esc(r.cls) + ' / ' + esc(bn(r.roll)) + '</b></div><div class="kv"><span>আইডি</span><b>' + esc(r.sid) + '</b></div>' +
+        '<table><tr><th>বিবরণ</th><th class="r">পরিমাণ</th><th class="r">টাকা</th></tr>' + rows + '</table>' +
+        '<div class="kv"><span>মোট</span><span>' + bn(r.total) + ' ৳</span></div>' + (r.discount ? '<div class="kv"><span>ছাড়</span><span>− ' + bn(r.discount) + ' ৳</span></div>' : '') +
+        '<div class="kv big"><span>পরিশোধিত</span><span>' + bn(r.paid) + ' ৳</span></div>' +
+        '<div class="kv" style="margin-top:6px"><span>পরিশোধের মাধ্যম</span><span>' + esc(j.online.method) + ' (অনলাইন)</span></div><div class="kv"><span>TrxID</span><span style="font-family:monospace">' + esc(j.online.trx) + '</span></div>' +
+        '<div class="ft">অফিস কর্তৃক যাচাইকৃত · কম্পিউটারে তৈরি রসিদ, সিল-স্বাক্ষর ছাড়াই বৈধ</div></div>' +
+        '<div class="act"><button onclick="window.print()">🖨 প্রিন্ট / PDF</button><button class="l" id="pxRcClose">বন্ধ করুন</button></div>';
+      document.body.appendChild(o);
+      o.querySelector('#pxRcClose').onclick = function () { o.remove(); };
+    }).catch(function () { done(); alert('সংযোগ হয়নি। আবার চেষ্টা করুন।'); });
   }
 
   setInterval(mount, 1000); mount();
