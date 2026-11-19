@@ -1,8 +1,8 @@
 /* প্রতিটি পেজের <head>-এ শুধু এই এক লাইন:  <script src="pwa.js"></script> */
 (function () {
   var p = location.pathname.split('/').pop() || 'index.html';
-  var scanner = /^(scan|face|idscan)\.html$/.test(p);
-  var site = /^(index\.html|parent\.html)$/.test(p);   // পাবলিক সাইট ও অভিভাবক পেজ = তৃতীয় অ্যাপ
+  var scanner = /^(scan|face|idscan|diary)\.html$/.test(p);
+  var site = /^(index\.html|parent\.html|live\.html)$/.test(p);   // পাবলিক সাইট ও অভিভাবক পেজ = তৃতীয় অ্যাপ
   var color = site ? '#f58a07' : '#0b6b4f';
   var appName = site ? 'ফয়যানে মদীনা' : (scanner ? 'হাজিরা স্ক্যান' : 'স্কুল অফিস');
   function add(tag, attrs) { var e = document.createElement(tag); for (var k in attrs) e.setAttribute(k, attrs[k]); document.head.appendChild(e); return e; }
@@ -48,7 +48,7 @@
       return;
     }
     if (ios) sheet('<b>' + appName + ' — অ্যাপ ইনস্টল</b><br>১. Safari-র নিচের <b>শেয়ার</b> বাটন (⬆️) চাপুন<br>২. নিচে নেমে <b>"Add to Home Screen"</b> চাপুন<br>৩. ওপরে <b>"Add"</b> চাপুন<br><small>(Safari ছাড়া অন্য ব্রাউজারে এটা আসে না)</small>');
-    else sheet('<b>' + appName + ' — অ্যাপ ইনস্টল</b><br>ব্রাউজারের ওপরের <b>⋮ মেনু</b> খুলে <b>"Install app"</b> বা <b>"Add to Home screen"</b> চাপুন।<br><small>বাটন না এলে Chrome-এ পেজটা খুলুন।</small>');
+    else sheet('<b>' + appName + ' — অ্যাপ ইনস্টল</b><br>ব্রাউজার এখন এক-চাপে ইনস্টলের অনুমতি দেয়নি। এই অ্যাপ আগে ইনস্টল করা থাকলে হোম স্ক্রিনের আইকন থেকেই খুলুন। নইলে ব্রাউজারের ওপরের <b>⋮ মেনু</b> খুলে <b>"Install app"</b> বা <b>"Add to Home screen"</b> চাপুন।<br><small>বাটন না এলে Chrome-এ পেজটা খুলুন।</small>');
   }
   if (document.body) ui(); else document.addEventListener('DOMContentLoaded', ui);
 })();
