@@ -116,7 +116,7 @@
       if (!amt.value) return m('er', 'টাকার অঙ্ক লিখুন');
       if (!body.querySelector('#pxT').value.trim()) return m('er', 'TrxID লিখুন');
       go.disabled = true; m('ok', 'পাঠানো হচ্ছে...');
-      call('payreport', { sid: s.id, months: months.join(','), amount: amt.value, method: body.querySelector('#pxM').value, trx: body.querySelector('#pxT').value.trim(), sender: body.querySelector('#pxP').value }).then(function (j) {
+      call('payreport', { id: s.id, months: months.join(','), amount: amt.value, method: body.querySelector('#pxM').value, trx: body.querySelector('#pxT').value.trim(), sender: body.querySelector('#pxP').value }).then(function (j) {
         go.disabled = false;
         if (j.ok) { PAY = null; pay(body); setTimeout(function () { var mm = body.querySelector('#pxMsg'); if (mm) { mm.className = 'ms ok'; mm.textContent = '✓ জানানো হয়েছে। অফিস মিলিয়ে নিলে এখানে "গৃহীত" দেখাবে।'; } }, 600); }
         else m('er', j.msg || 'হয়নি');
